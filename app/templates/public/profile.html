@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'پروفایل' if is_rtl else 'My Profile' }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row">
+    <!-- Profile Sidebar -->
+    <div class="col-lg-3 mb-4">
+      <div class="card border-0 shadow-sm text-center p-4">
+        {% if current_user.profile.avatar %}
+        <img src="{{ url_for('static', filename='uploads/avatars/' ~ current_user.profile.avatar) }}"
+             class="rounded-circle mx-auto d-block mb-3" width="80" height="80" style="object-fit:cover"/>
+        {% else %}
+        <div class="avatar-lg mx-auto mb-3">
+          {{ current_user.username[0].upper() }}
+        </div>
+        {% endif %}
+        <h5>{{ current_user.username }}</h5>
+        <span class="badge {{ 'bg-danger' if current_user.is_admin else 'bg-primary' }} mb-2">
+          {{ current_user.role }}
+        </span>
+        <p class="text-muted small mb-0">{{ current_user.email }}</p>
+      </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="col-lg-9">
+      <!-- Update Profile -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0">
+            <i class="fas fa-user-edit me-2"></i>
+            {{ 'ویرایش پروفایل' if is_rtl else 'Edit Profile' }}
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <form method="POST" action="{{ url_for('public.profile_update') }}" enctype="multipart/form-data">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">{{ 'نام' if is_rtl else 'First Name' }}</label>
+                <input type="text" name="first_name" class="form-control"
+                       value="{{ current_user.profile.get('first_name', '') }}"/>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'نام خانوادگی' if is_rtl else 'Last Name' }}</label>
+                <input type="text" name="last_name" class="form-control"
+                       value="{{ current_user.profile.get('last_name', '') }}"/>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'شماره تلفن' if is_rtl else 'Phone' }}</label>
+                <input type="text" name="phone" class="form-control"
+                       value="{{ current_user.profile.get('phone', '') }}"/>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'تصویر پروفایل' if is_rtl else 'Avatar' }}</label>
+                <input type="file" name="avatar" class="form-control" accept="image/*"/>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'درباره من (انگلیسی)' if is_rtl else 'Bio (English)' }}</label>
+                <textarea name="bio_en" class="form-control" rows="3">{{ current_user.profile.get('bio_en', '') }}</textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">درباره من (فارسی)</label>
+                <textarea name="bio_fa" class="form-control" dir="rtl" rows="3">{{ current_user.profile.get('bio_fa', '') }}</textarea>
+              </div>
+            </div>
+            <div class="mt-3">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>
+                {{ 'ذخیره تغییرات' if is_rtl else 'Save Changes' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0">
+            <i class="fas fa-key me-2"></i>
+            {{ 'تغییر رمز عبور' if is_rtl else 'Change Password' }}
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <form method="POST" action="{{ url_for('public.change_password') }}">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">{{ 'رمز فعلی' if is_rtl else 'Current Password' }}</label>
+                <input type="password" name="current_password" class="form-control" required/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">{{ 'رمز جدید' if is_rtl else 'New Password' }}</label>
+                <input type="password" name="new_password" class="form-control" minlength="6" required/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">{{ 'تکرار رمز' if is_rtl else 'Confirm New Password' }}</label>
+                <input type="password" name="confirm_password" class="form-control" required/>
+              </div>
+            </div>
+            <div class="mt-3">
+              <button type="submit" class="btn btn-warning">
+                <i class="fas fa-key me-2"></i>
+                {{ 'تغییر رمز' if is_rtl else 'Change Password' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

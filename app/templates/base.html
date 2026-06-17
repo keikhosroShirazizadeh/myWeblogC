@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="{{ 'fa' if is_rtl else 'en' }}" dir="{{ 'rtl' if is_rtl else 'ltr' }}">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}MyWeblog{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  {% if is_rtl %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css"/>
+  {% endif %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"/>
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{{ 'rtl-body' if is_rtl else '' }}">
+
+<!-- Top Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{{ url_for('public.home') }}">
+      <i class="fas fa-blog me-2"></i>MyWeblog
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('public.home') }}">
+            {{ 'خانه' if is_rtl else 'Home' }}
+          </a>
+        </li>
+        {% for item in menu_categories %}
+          {% set cat = item.category %}
+          {% if item.subcategories %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+              {{ cat.name_fa if is_rtl else cat.name_en }}
+            </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="{{ url_for('public.category_posts', slug=cat.slug) }}">
+                  {{ 'همه' if is_rtl else 'All' }} - {{ cat.name_fa if is_rtl else cat.name_en }}
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              {% for sub in item.subcategories %}
+              <li>
+                <a class="dropdown-item" href="{{ url_for('public.category_posts', slug=sub.slug) }}">
+                  {{ sub.name_fa if is_rtl else sub.name_en }}
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('public.category_posts', slug=cat.slug) }}">
+              {{ cat.name_fa if is_rtl else cat.name_en }}
+            </a>
+          </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+      <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <!-- Language Toggle -->
+        <li class="nav-item">
+          {% if is_rtl %}
+          <a class="btn btn-sm btn-outline-light" href="{{ url_for('auth.set_language', lang='en') }}">EN</a>
+          {% else %}
+          <a class="btn btn-sm btn-outline-light" href="{{ url_for('auth.set_language', lang='fa') }}">FA</a>
+          {% endif %}
+        </li>
+
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+              <i class="fas fa-cog"></i> {{ 'پنل ادمین' if is_rtl else 'Admin' }}
+            </a>
+          </li>
+          {% endif %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+              <i class="fas fa-user-circle"></i> {{ current_user.username }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{{ url_for('public.profile') }}">
+                <i class="fas fa-user me-2"></i>{{ 'پروفایل' if is_rtl else 'Profile' }}
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-sign-out-alt me-2"></i>{{ 'خروج' if is_rtl else 'Logout' }}
+              </a></li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.login') }}">
+              {{ 'ورود' if is_rtl else 'Login' }}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-sm btn-primary" href="{{ url_for('auth.register') }}">
+              {{ 'ثبت‌نام' if is_rtl else 'Register' }}
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="container mt-3">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Main Content -->
+{% block content %}{% endblock %}
+
+<!-- Footer -->
+<footer class="bg-dark text-light py-4 mt-5">
+  <div class="container text-center">
+    <p class="mb-0">&copy; 2024 MyWeblog.
+      {{ 'تمامی حقوق محفوظ است' if is_rtl else 'All rights reserved' }}.
+    </p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'ثبت‌نام' if is_rtl else 'Register' }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card border-0 shadow">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <i class="fas fa-user-plus fa-3x text-success mb-3"></i>
+            <h3>{{ 'ایجاد حساب کاربری' if is_rtl else 'Create Account' }}</h3>
+            <p class="text-muted">{{ 'به جمع ما بپیوندید' if is_rtl else 'Join our community' }}</p>
+          </div>
+
+          <form method="POST">
+            <div class="mb-3">
+              <label class="form-label">{{ 'نام کاربری' if is_rtl else 'Username' }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                <input type="text" name="username" class="form-control"
+                       placeholder="{{ 'نام کاربری' if is_rtl else 'Username' }}"
+                       minlength="3" required/>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ 'ایمیل' if is_rtl else 'Email' }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                <input type="email" name="email" class="form-control"
+                       placeholder="{{ 'ایمیل' if is_rtl else 'Email address' }}" required/>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ 'رمز عبور' if is_rtl else 'Password' }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <input type="password" name="password" class="form-control"
+                       placeholder="{{ 'حداقل ۶ کاراکتر' if is_rtl else 'Minimum 6 characters' }}"
+                       minlength="6" required/>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">{{ 'تکرار رمز عبور' if is_rtl else 'Confirm Password' }}</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <input type="password" name="confirm_password" class="form-control"
+                       placeholder="{{ 'تکرار رمز' if is_rtl else 'Repeat password' }}" required/>
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-success btn-lg">
+                {{ 'ثبت‌نام' if is_rtl else 'Create Account' }}
+              </button>
+            </div>
+          </form>
+
+          <hr class="my-4"/>
+          <p class="text-center text-muted mb-0">
+            {{ 'حساب دارید؟' if is_rtl else 'Already have an account?' }}
+            <a href="{{ url_for('auth.login') }}">
+              {{ 'ورود' if is_rtl else 'Sign In' }}
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

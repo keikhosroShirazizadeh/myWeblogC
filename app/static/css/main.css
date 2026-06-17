@@ -1,0 +1,105 @@
+/* ============================================================
+   MyWeblog – Public CSS
+   ============================================================ */
+
+:root {
+  --primary: #0d6efd;
+  --accent: #764ba2;
+  --text-muted: #6c757d;
+  --radius: .75rem;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #212529;
+  line-height: 1.7;
+}
+
+/* RTL body */
+.rtl-body {
+  font-family: 'Segoe UI', 'Tahoma', 'Arial', system-ui, sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+/* ── Navbar ─────────────────────────────────────────── */
+.navbar-brand {
+  font-size: 1.4rem;
+  letter-spacing: -0.5px;
+}
+
+/* ── Cards ──────────────────────────────────────────── */
+.card {
+  border-radius: var(--radius);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.12) !important;
+}
+
+/* ── Setup steps (no-template page) ─────────────────── */
+.step-number {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 4px;
+}
+
+/* ── Avatar (profile) ───────────────────────────────── */
+.avatar-lg {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Post article ───────────────────────────────────── */
+.post-content {
+  font-size: 1.05rem;
+  line-height: 1.85;
+}
+
+.post-content img { max-width: 100%; border-radius: .5rem; }
+.post-content h1, .post-content h2, .post-content h3 { margin-top: 1.5rem; }
+.post-content pre { background: #f8f9fa; padding: 1rem; border-radius: .5rem; overflow-x: auto; }
+.post-content blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 1rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* RTL blockquote */
+.rtl-body .post-content blockquote {
+  border-left: none;
+  border-right: 4px solid var(--primary);
+  padding-left: 0;
+  padding-right: 1rem;
+}
+
+/* ── Assembled template ─────────────────────────────── */
+.assembled-template {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 576px) {
+  .display-5 { font-size: 1.8rem; }
+  .display-6 { font-size: 1.5rem; }
+}

@@ -1,0 +1,104 @@
+{% extends 'admin/base.html' %}
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2><i class="fas fa-folder me-2"></i>Categories</h2>
+  <a href="{{ url_for('admin.category_create') }}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i> Add Category
+  </a>
+</div>
+
+{% if top_level %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Name (EN / FA)</th>
+            <th>Slug</th>
+            <th>Order</th>
+            <th>Status</th>
+            <th>Subcategories</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in top_level %}
+          <tr class="table-row-parent">
+            <td>
+              <strong>{{ cat.name_en }}</strong>
+              {% if cat.name_fa %}<br><span class="text-muted small" dir="rtl">{{ cat.name_fa }}</span>{% endif %}
+            </td>
+            <td><code>{{ cat.slug }}</code></td>
+            <td>{{ cat.order }}</td>
+            <td>
+              <span class="badge {{ 'bg-success' if cat.is_active else 'bg-secondary' }}">
+                {{ 'Active' if cat.is_active else 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              {% set subs = children.get(cat._id | string, []) %}
+              <span class="badge bg-light text-dark">{{ subs | length }}</span>
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('admin.category_edit', cat_id=cat._id) }}"
+                 class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i>
+              </a>
+              <form method="POST" action="{{ url_for('admin.category_delete', cat_id=cat._id) }}"
+                    class="d-inline" onsubmit="return confirm('Delete this category?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          <!-- Subcategories -->
+          {% for sub in children.get(cat._id | string, []) %}
+          <tr class="table-light">
+            <td class="ps-5">
+              <i class="fas fa-level-up-alt fa-flip-horizontal me-2 text-muted"></i>
+              {{ sub.name_en }}
+              {% if sub.name_fa %}<br><span class="text-muted small ps-4" dir="rtl">{{ sub.name_fa }}</span>{% endif %}
+            </td>
+            <td><code>{{ sub.slug }}</code></td>
+            <td>{{ sub.order }}</td>
+            <td>
+              <span class="badge {{ 'bg-success' if sub.is_active else 'bg-secondary' }}">
+                {{ 'Active' if sub.is_active else 'Inactive' }}
+              </span>
+            </td>
+            <td>—</td>
+            <td class="text-end">
+              <a href="{{ url_for('admin.category_edit', cat_id=sub._id) }}"
+                 class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i>
+              </a>
+              <form method="POST" action="{{ url_for('admin.category_delete', cat_id=sub._id) }}"
+                    class="d-inline" onsubmit="return confirm('Delete this subcategory?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+  <i class="fas fa-folder-open fa-4x mb-3"></i>
+  <h4>No categories yet</h4>
+  <p>Create categories to organize your posts and build the navigation menu.</p>
+  <a href="{{ url_for('admin.category_create') }}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i> Create First Category
+  </a>
+</div>
+{% endif %}
+{% endblock %}

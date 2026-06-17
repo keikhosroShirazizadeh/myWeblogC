@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title_fa if is_rtl and post.title_fa else post.title_en }}{% endblock %}
+
+{% block extra_css %}
+{% if post.custom_css %}
+<style>{{ post.custom_css | safe }}</style>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Post Header from Template (if available) -->
+{% if header_html %}
+<div class="post-template-header">{{ header_html | safe }}</div>
+{% endif %}
+
+<div class="container py-5">
+  <div class="row">
+    <!-- Post Content -->
+    <div class="col-lg-8">
+      <article class="post-article">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('public.home') }}">{{ 'خانه' if is_rtl else 'Home' }}</a>
+            </li>
+            {% if category %}
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('public.category_posts', slug=category.slug) }}">
+                {{ category.name_fa if is_rtl and category.name_fa else category.name_en }}
+              </a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active">
+              {{ post.title_fa if is_rtl and post.title_fa else post.title_en }}
+            </li>
+          </ol>
+        </nav>
+
+        <!-- Post Title -->
+        <h1 class="display-6 fw-bold mb-3">
+          {{ post.title_fa if is_rtl and post.title_fa else post.title_en }}
+        </h1>
+
+        <!-- Meta -->
+        <div class="d-flex flex-wrap gap-3 align-items-center text-muted small mb-4 pb-4 border-bottom">
+          <span>
+            <i class="far fa-calendar me-1"></i>
+            {{ post.created_at.strftime('%B %d, %Y') if post.created_at else '' }}
+          </span>
+          {% if category %}
+          <span>
+            <i class="fas fa-folder me-1"></i>
+            <a href="{{ url_for('public.category_posts', slug=category.slug) }}" class="text-muted">
+              {{ category.name_fa if is_rtl and category.name_fa else category.name_en }}
+            </a>
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- Post Content -->
+        <div class="post-content">
+          {% set content = post.content_fa if is_rtl and post.content_fa else post.content_en %}
+          {{ content | safe }}
+        </div>
+      </article>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent">
+          <strong>{{ 'دسته‌بندی‌ها' if is_rtl else 'Categories' }}</strong>
+        </div>
+        <div class="card-body">
+          {% for item in menu_categories %}
+          {% set cat = item.category %}
+          <div class="mb-1">
+            <a href="{{ url_for('public.category_posts', slug=cat.slug) }}"
+               class="text-decoration-none text-dark">
+              <i class="fas fa-folder me-2 text-warning"></i>
+              {{ cat.name_fa if is_rtl and cat.name_fa else cat.name_en }}
+            </a>
+          </div>
+          {% for sub in item.subcategories %}
+          <div class="ps-3 mb-1">
+            <a href="{{ url_for('public.category_posts', slug=sub.slug) }}"
+               class="text-decoration-none text-muted small">
+              <i class="fas fa-angle-right me-2"></i>
+              {{ sub.name_fa if is_rtl and sub.name_fa else sub.name_en }}
+            </a>
+          </div>
+          {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Post Footer from Template (if available) -->
+{% if footer_html %}
+<div class="post-template-footer">{{ footer_html | safe }}</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if post.custom_js %}
+<script>{{ post.custom_js | safe }}</script>
+{% endif %}
+{% endblock %}

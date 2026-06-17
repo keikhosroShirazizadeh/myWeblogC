@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.name_fa if is_rtl and category.name_fa else category.name_en }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="mb-4">
+    <h1>
+      <i class="fas fa-folder-open me-2 text-warning"></i>
+      {{ category.name_fa if is_rtl and category.name_fa else category.name_en }}
+    </h1>
+    {% set desc = category.description_fa if is_rtl and category.description_fa else category.description_en %}
+    {% if desc %}
+    <p class="text-muted lead">{{ desc }}</p>
+    {% endif %}
+  </div>
+
+  {% if posts %}
+  <div class="row g-4">
+    {% for post in posts %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 shadow-sm h-100 post-card">
+        <div class="card-body p-4">
+          <h5 class="card-title">
+            <a href="{{ url_for('public.post_detail', slug=post.slug) }}"
+               class="text-decoration-none text-dark">
+              {{ post.title_fa if is_rtl and post.title_fa else post.title_en }}
+            </a>
+          </h5>
+          {% set excerpt = post.excerpt_fa if is_rtl and post.excerpt_fa else post.excerpt_en %}
+          {% if excerpt %}
+          <p class="card-text text-muted small">{{ excerpt | truncate(120) }}</p>
+          {% endif %}
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+          <small class="text-muted">
+            {{ post.created_at.strftime('%Y-%m-%d') if post.created_at else '' }}
+          </small>
+          <a href="{{ url_for('public.post_detail', slug=post.slug) }}"
+             class="btn btn-sm btn-outline-primary">
+            {{ 'ادامه مطلب' if is_rtl else 'Read More' }}
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="fas fa-inbox fa-4x mb-3"></i>
+    <h4>{{ 'مطلبی یافت نشد' if is_rtl else 'No posts yet' }}</h4>
+    <p>{{ 'در این دسته‌بندی مطلبی منتشر نشده است.' if is_rtl else 'No published posts in this category.' }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

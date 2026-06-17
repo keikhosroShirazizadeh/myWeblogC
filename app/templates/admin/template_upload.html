@@ -1,0 +1,82 @@
+{% extends 'admin/base.html' %}
+{% block title %}Upload Template{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2><i class="fas fa-upload me-2"></i>Upload Template</h2>
+  <a href="{{ url_for('admin.template_list') }}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i> Back
+  </a>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Template Name <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control" placeholder="My Website Template" required/>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="fas fa-file-upload me-1"></i> Upload HTML File
+            </label>
+            <input type="file" name="template_file" class="form-control" accept=".html,.htm"
+                   id="fileInput"/>
+            <div class="form-text">Accepted: .html, .htm files</div>
+          </div>
+
+          <div class="text-center text-muted my-3">— OR —</div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold">
+              <i class="fas fa-code me-1"></i> Paste HTML Content
+            </label>
+            <textarea name="html_content" id="htmlContent" class="form-control font-monospace"
+                      rows="12" placeholder="Paste your full HTML template here..."></textarea>
+            <div class="form-text">
+              The system will automatically extract sections using their <code>id</code> attributes,
+              and semantic tags like <code>&lt;header&gt;</code>, <code>&lt;section&gt;</code>,
+              <code>&lt;footer&gt;</code>, etc.
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-cogs me-2"></i> Parse & Upload Template
+            </button>
+            <a href="{{ url_for('admin.template_list') }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm bg-light">
+      <div class="card-body p-4">
+        <h5><i class="fas fa-lightbulb text-warning me-2"></i>Tips</h5>
+        <ul class="small text-muted ps-3">
+          <li class="mb-2">Use <code>id</code> attributes on your HTML sections for best results.</li>
+          <li class="mb-2">Semantic tags like <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>,
+            <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code>, <code>&lt;section&gt;</code>
+            are automatically detected.</li>
+          <li class="mb-2">After upload you can edit each section's content and custom CSS independently.</li>
+          <li class="mb-2">Both English and Persian content can be set per section.</li>
+          <li>Activate the template to make it live on your website.</li>
+        </ul>
+
+        <hr/>
+        <h6>Example structure:</h6>
+        <pre class="bg-white p-2 rounded small"><code>&lt;header id="site-header"&gt;...&lt;/header&gt;
+&lt;nav id="main-nav"&gt;...&lt;/nav&gt;
+&lt;section id="hero"&gt;...&lt;/section&gt;
+&lt;section id="about"&gt;...&lt;/section&gt;
+&lt;footer id="site-footer"&gt;...&lt;/footer&gt;</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Welcome - MyWeblog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Welcome Banner -->
+  <div class="card border-0 shadow-sm mb-5 bg-gradient"
+       style="background: linear-gradient(135deg,#667eea,#764ba2); color:white;">
+    <div class="card-body p-5 text-center">
+      <i class="fas fa-blog fa-4x mb-3 opacity-75"></i>
+      <h1 class="display-5 fw-bold mb-3">Welcome to MyWeblog!</h1>
+      <p class="lead mb-4">
+        Your weblog platform is ready. Follow the steps below to set up your website.
+      </p>
+      {% if current_user.is_authenticated and current_user.is_admin %}
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-light btn-lg">
+        <i class="fas fa-tachometer-alt me-2"></i> Go to Admin Panel
+      </a>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg me-2">
+        <i class="fas fa-sign-in-alt me-2"></i> Admin Login
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Setup Steps -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100 text-center p-4">
+        <div class="step-number">1</div>
+        <i class="fas fa-upload fa-3x text-primary my-3"></i>
+        <h5>Upload a Template</h5>
+        <p class="text-muted small">
+          Go to <strong>Admin → Templates → Upload</strong>.
+          Upload your HTML/CSS/JS template file or paste HTML directly.
+          The system will automatically extract all sections.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100 text-center p-4">
+        <div class="step-number">2</div>
+        <i class="fas fa-edit fa-3x text-success my-3"></i>
+        <h5>Edit Sections</h5>
+        <p class="text-muted small">
+          Each part of your template (header, sections, footer) becomes editable.
+          Add content in <strong>English and Persian</strong> for each section with custom CSS.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100 text-center p-4">
+        <div class="step-number">3</div>
+        <i class="fas fa-folder-plus fa-3x text-warning my-3"></i>
+        <h5>Add Categories & Posts</h5>
+        <p class="text-muted small">
+          Create categories for your navigation menu.
+          Write posts and assign them to categories.
+          Posts will appear in the navigation automatically.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Posts (if any) -->
+  {% if recent_posts %}
+  <h3 class="mb-4"><i class="fas fa-pen-alt me-2"></i>Recent Posts</h3>
+  <div class="row g-4">
+    {% for post in recent_posts %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="card-title">{{ post.title_en }}</h6>
+          {% if post.excerpt_en %}
+          <p class="text-muted small">{{ post.excerpt_en | truncate(100) }}</p>
+          {% endif %}
+        </div>
+        <div class="card-footer bg-transparent">
+          <a href="{{ url_for('public.post_detail', slug=post.slug) }}"
+             class="btn btn-sm btn-outline-primary">
+            Read More <i class="fas fa-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
