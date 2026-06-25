@@ -1,17 +1,22 @@
+import os
 from datetime import datetime
 from bson import ObjectId
 from app.extensions import mongo
 
 
-def create_template(name, original_html, global_css='', global_js=''):
+def create_template(name, original_html, global_css='', global_js='',
+                     asset_folder=None, template_id=None):
     doc = {
         'name': name,
         'original_html': original_html,
         'global_css': global_css,
         'global_js': global_js,
+        'asset_folder': asset_folder,
         'is_active': False,
         'created_at': datetime.utcnow(),
     }
+    if template_id:
+        doc['_id'] = ObjectId(template_id)
     result = mongo.db.site_templates.insert_one(doc)
     return str(result.inserted_id)
 
@@ -40,8 +45,15 @@ def activate_template(template_id):
 
 
 def delete_template(template_id):
+    template = get_template_by_id(template_id)
     mongo.db.site_templates.delete_one({'_id': ObjectId(template_id)})
     mongo.db.sections.delete_many({'template_id': ObjectId(template_id)})
+
+    if template and template.get('asset_folder'):
+        import shutil
+        from flask import current_app
+        folder = os.path.join(current_app.static_folder, *template['asset_folder'].split('/'))
+        shutil.rmtree(folder, ignore_errors=True)
 
 
 def get_sections_for_template(template_id):

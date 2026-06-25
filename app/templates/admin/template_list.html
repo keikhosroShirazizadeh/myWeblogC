@@ -26,8 +26,11 @@
           {{ t.created_at.strftime('%Y-%m-%d') if t.created_at else 'N/A' }}
         </p>
         <p class="text-muted small">
-          <i class="fas fa-th-large me-1"></i>
-          Uploaded template
+          {% if t.asset_folder %}
+          <i class="fas fa-file-archive me-1"></i> Uploaded from .zip (with assets)
+          {% else %}
+          <i class="fas fa-th-large me-1"></i> Uploaded template
+          {% endif %}
         </p>
       </div>
       <div class="card-footer bg-transparent d-flex gap-2 flex-wrap">

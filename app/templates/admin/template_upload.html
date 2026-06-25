@@ -21,11 +21,16 @@
 
           <div class="mb-3">
             <label class="form-label fw-bold">
-              <i class="fas fa-file-upload me-1"></i> Upload HTML File
+              <i class="fas fa-file-archive me-1"></i> Upload Template Archive or HTML File
             </label>
-            <input type="file" name="template_file" class="form-control" accept=".html,.htm"
+            <input type="file" name="template_file" class="form-control" accept=".zip,.html,.htm"
                    id="fileInput"/>
-            <div class="form-text">Accepted: .html, .htm files</div>
+            <div class="form-text">
+              Upload a <code>.zip</code> containing your full template source (HTML, CSS, JS, images)
+              for the best results, or a single <code>.html</code> / <code>.htm</code> file.
+              For a zip, include an <code>index.html</code> at the root or top folder — its linked
+              CSS, JS, and image files will be imported automatically.
+            </div>
           </div>
 
           <div class="text-center text-muted my-3">— OR —</div>
@@ -45,7 +50,7 @@
 
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">
-              <i class="fas fa-cogs me-2"></i> Parse & Upload Template
+              <i class="fas fa-cogs me-2"></i> Parse &amp; Upload Template
             </button>
             <a href="{{ url_for('admin.template_list') }}" class="btn btn-outline-secondary">Cancel</a>
           </div>
@@ -59,6 +64,8 @@
       <div class="card-body p-4">
         <h5><i class="fas fa-lightbulb text-warning me-2"></i>Tips</h5>
         <ul class="small text-muted ps-3">
+          <li class="mb-2">Prefer uploading a <code>.zip</code> of the whole template (HTML + CSS + JS +
+            images) so styling and assets render correctly while you edit sections.</li>
           <li class="mb-2">Use <code>id</code> attributes on your HTML sections for best results.</li>
           <li class="mb-2">Semantic tags like <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>,
             <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code>, <code>&lt;section&gt;</code>

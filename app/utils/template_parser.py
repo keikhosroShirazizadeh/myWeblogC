@@ -1,7 +1,54 @@
+import posixpath
+import re
+
 from bs4 import BeautifulSoup
 
 
 SEMANTIC_TAGS = ['header', 'nav', 'main', 'footer', 'section', 'article', 'aside', 'div']
+
+ASSET_TAGS = (
+    ('link', 'href'),
+    ('script', 'src'),
+    ('img', 'src'),
+    ('source', 'src'),
+    ('video', 'src'),
+    ('audio', 'src'),
+)
+
+_CSS_URL_RE = re.compile(r"url\(\s*(['\"]?)(?!data:|https?:|//)([^'\")]+)\1\s*\)")
+_EXTERNAL_PREFIXES = ('http://', 'https://', '//', 'data:', '#', 'mailto:', 'tel:')
+
+
+def rewrite_asset_paths(html_content, base_url, main_html_relpath):
+    """Rewrite relative asset references from an extracted zip template so they
+    resolve against base_url (the static folder the archive was extracted into),
+    instead of relative to the page the assembled template ends up embedded in.
+    """
+    soup = BeautifulSoup(html_content, 'lxml')
+    base_dir = posixpath.dirname(main_html_relpath.replace('\\', '/'))
+
+    def resolve(path):
+        if not path or path.startswith(_EXTERNAL_PREFIXES):
+            return path
+        joined = posixpath.normpath(posixpath.join(base_dir, path)) if base_dir else posixpath.normpath(path)
+        return f"{base_url}/{joined.lstrip('/')}"
+
+    for tag_name, attr in ASSET_TAGS:
+        for el in soup.find_all(tag_name):
+            value = el.get(attr)
+            if value:
+                el[attr] = resolve(value)
+
+    for style_tag in soup.find_all('style'):
+        if style_tag.string:
+            style_tag.string.replace_with(
+                _CSS_URL_RE.sub(lambda m: f"url({resolve(m.group(2))})", style_tag.string)
+            )
+
+    for el in soup.find_all(style=True):
+        el['style'] = _CSS_URL_RE.sub(lambda m: f"url({resolve(m.group(2))})", el['style'])
+
+    return str(soup)
 
 
 def parse_template(html_content):

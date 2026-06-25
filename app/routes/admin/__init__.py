@@ -1,4 +1,5 @@
 import os
+import zipfile
 from flask import (
     Blueprint, render_template, redirect, url_for,
     flash, request, current_app, Response
@@ -55,16 +56,37 @@ def template_list():
 @admin_bp.route('/templates/upload', methods=['GET', 'POST'])
 @admin_required
 def template_upload():
+    import shutil
     from app.models.template import create_template, save_section
-    from app.utils.template_parser import parse_template, extract_global_styles, extract_global_scripts
-    from app.utils.helpers import allowed_file, save_uploaded_file
+    from app.utils.template_parser import (
+        parse_template, extract_global_styles, extract_global_scripts, rewrite_asset_paths
+    )
+    from app.utils.zip_template import extract_template_zip
+    from app.utils.helpers import allowed_file
 
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         html_content = ''
+        asset_folder = None
+        new_id = ObjectId()
 
         file = request.files.get('template_file')
-        if file and file.filename and allowed_file(file.filename):
+        if file and file.filename and file.filename.lower().endswith('.zip'):
+            dest_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'templates', str(new_id))
+            try:
+                main_html_rel = extract_template_zip(file, dest_folder)
+            except (ValueError, zipfile.BadZipFile) as e:
+                shutil.rmtree(dest_folder, ignore_errors=True)
+                flash(f'Could not read template archive: {e}', 'danger')
+                return render_template('admin/template_upload.html')
+
+            asset_folder = f'uploads/templates/{new_id}'
+            main_html_path = os.path.join(dest_folder, *main_html_rel.split('/'))
+            with open(main_html_path, 'r', encoding='utf-8', errors='replace') as f:
+                raw_html = f.read()
+            base_url = url_for('static', filename=asset_folder)
+            html_content = rewrite_asset_paths(raw_html, base_url, main_html_rel)
+        elif file and file.filename and allowed_file(file.filename):
             html_content = file.read().decode('utf-8', errors='replace')
         else:
             html_content = request.form.get('html_content', '').strip()
@@ -78,13 +100,17 @@ def template_upload():
 
         global_css = extract_global_styles(html_content)
         global_js = extract_global_scripts(html_content)
-        template_id = create_template(name, html_content, global_css, global_js)
+        template_id = create_template(name, html_content, global_css, global_js,
+                                       asset_folder=asset_folder, template_id=str(new_id))
 
         sections, updated_html = parse_template(html_content)
         for sec in sections:
             save_section(template_id, sec)
 
-        flash(f'Template "{name}" uploaded with {len(sections)} sections extracted.', 'success')
+        message = f'Template "{name}" uploaded with {len(sections)} sections extracted.'
+        if asset_folder:
+            message += ' Linked CSS, JS, and image files from the archive were imported.'
+        flash(message, 'success')
         return redirect(url_for('admin.template_sections', template_id=template_id))
 
     return render_template('admin/template_upload.html')
