@@ -1,0 +1,27 @@
+name: Deploy to Main Server (Production)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, main-server]
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write environment file
+        run: |
+          cat > .env <<EOF
+          MONGO_URI=${{ secrets.MONGO_URI }}
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          FLASK_ENV=production
+          APP_PORT=${{ vars.APP_PORT }}
+          EOF
+
+      - name: Build and restart container
+        run: docker compose up -d --build
+
+      - name: Prune dangling images
+        run: docker image prune -f
