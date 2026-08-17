@@ -1,0 +1,129 @@
+{% extends 'admin/base.html' %}
+{% block title %}{{ 'Edit' if action == 'edit' else 'Create' }} Menu Item{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>
+    <i class="fas fa-bars me-2"></i>
+    {{ 'Edit Menu Item' if action == 'edit' else 'Create Menu Item' }}
+  </h2>
+  <a href="{{ url_for('admin.menu_list') }}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i> Back
+  </a>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Title (English) <span class="text-danger">*</span></label>
+              <input type="text" name="title_en" class="form-control"
+                     value="{{ item.title_en if item else '' }}"
+                     placeholder="Menu Title" required/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">عنوان (فارسی)</label>
+              <input type="text" name="title_fa" class="form-control" dir="rtl"
+                     value="{{ item.title_fa if item else '' }}"
+                     placeholder="عنوان منو"/>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Link Type</label>
+              <select name="link_type" id="linkType" class="form-select">
+                <option value="custom" {{ 'selected' if not item or item.link_type == 'custom' }}>Custom URL</option>
+                <option value="category" {{ 'selected' if item and item.link_type == 'category' }}>Category</option>
+              </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end gap-4">
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" name="is_active" id="isActive"
+                       {{ 'checked' if not item or item.is_active }}>
+                <label class="form-check-label" for="isActive">Active</label>
+              </div>
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" name="open_new_tab" id="openNewTab"
+                       {{ 'checked' if item and item.open_new_tab }}>
+                <label class="form-check-label" for="openNewTab">Open in new tab</label>
+              </div>
+            </div>
+
+            <div class="col-12" id="urlField">
+              <label class="form-label fw-bold">URL</label>
+              <input type="text" name="url" class="form-control"
+                     value="{{ item.url if item else '' }}"
+                     placeholder="/about or https://example.com"/>
+              <div class="form-text">Internal path (e.g. <code>/about</code>) or a full external URL.</div>
+            </div>
+            <div class="col-12 d-none" id="categoryField">
+              <label class="form-label fw-bold">Category</label>
+              <select name="category_id" class="form-select">
+                <option value="">— Select a category —</option>
+                {% for cat in all_cats %}
+                <option value="{{ cat._id }}"
+                  {{ 'selected' if item and item.category_id and item.category_id | string == cat._id | string }}>
+                  {{ cat.name_en }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Parent Menu Item</label>
+              <select name="parent_id" class="form-select">
+                <option value="">— None (Top Level) —</option>
+                {% for i in all_items %}
+                  {% if not i.parent_id %}
+                  <option value="{{ i._id }}"
+                    {{ 'selected' if item and item.parent_id and item.parent_id | string == i._id | string }}>
+                    {{ i.title_en }}
+                  </option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+              <div class="form-text">Nest under a top-level item to show it in a dropdown.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Order</label>
+              <input type="number" name="order" class="form-control"
+                     value="{{ item.order if item else 0 }}" min="0"/>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-2"></i>
+              {{ 'Update Menu Item' if action == 'edit' else 'Create Menu Item' }}
+            </button>
+            <a href="{{ url_for('admin.menu_list') }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var select = document.getElementById('linkType');
+    var urlField = document.getElementById('urlField');
+    var categoryField = document.getElementById('categoryField');
+
+    function toggle() {
+      if (select.value === 'category') {
+        urlField.classList.add('d-none');
+        categoryField.classList.remove('d-none');
+      } else {
+        urlField.classList.remove('d-none');
+        categoryField.classList.add('d-none');
+      }
+    }
+
+    select.addEventListener('change', toggle);
+    toggle();
+  })();
+</script>
+{% endblock %}

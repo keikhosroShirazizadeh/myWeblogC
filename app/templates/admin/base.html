@@ -65,6 +65,17 @@
       </li>
       <li class="nav-item mt-2">
         <span class="nav-link text-secondary small text-uppercase px-2">
+          <i class="fas fa-bars me-1"></i> Navigation
+        </span>
+      </li>
+      <li class="nav-item">
+        <a href="{{ url_for('admin.menu_list') }}"
+           class="nav-link text-white {{ 'active' if 'menu' in request.endpoint }}">
+          <i class="fas fa-bars me-2"></i> Menu
+        </a>
+      </li>
+      <li class="nav-item mt-2">
+        <span class="nav-link text-secondary small text-uppercase px-2">
           <i class="fas fa-users me-1"></i> Users
         </span>
       </li>

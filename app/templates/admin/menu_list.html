@@ -1,0 +1,114 @@
+{% extends 'admin/base.html' %}
+{% block title %}Menu{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2><i class="fas fa-bars me-2"></i>Navigation Menu</h2>
+  <a href="{{ url_for('admin.menu_create') }}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i> Add Menu Item
+  </a>
+</div>
+
+{% if top_level %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Title (EN / FA)</th>
+            <th>Link</th>
+            <th>Order</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in top_level | sort(attribute='order') %}
+          <tr class="table-row-parent">
+            <td>
+              <strong>{{ item.title_en }}</strong>
+              {% if item.title_fa %}<br><span class="text-muted small" dir="rtl">{{ item.title_fa }}</span>{% endif %}
+            </td>
+            <td>
+              {% if item.link_type == 'category' %}
+                <span class="badge bg-light text-dark"><i class="fas fa-folder me-1"></i>Category</span>
+              {% else %}
+                <code>{{ item.url }}</code>
+              {% endif %}
+              {% if item.open_new_tab %}<i class="fas fa-external-link-alt text-muted ms-1" title="Opens in new tab"></i>{% endif %}
+            </td>
+            <td>{{ item.order }}</td>
+            <td>
+              <span class="badge {{ 'bg-success' if item.is_active else 'bg-secondary' }}">
+                {{ 'Active' if item.is_active else 'Inactive' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('admin.menu_edit', item_id=item._id) }}"
+                 class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i>
+              </a>
+              <form method="POST" action="{{ url_for('admin.menu_delete', item_id=item._id) }}"
+                    class="d-inline" onsubmit="return confirm('Delete this menu item?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% for sub in children.get(item._id | string, []) | sort(attribute='order') %}
+          <tr class="table-light">
+            <td class="ps-5">
+              <i class="fas fa-level-up-alt fa-flip-horizontal me-2 text-muted"></i>
+              {{ sub.title_en }}
+              {% if sub.title_fa %}<br><span class="text-muted small ps-4" dir="rtl">{{ sub.title_fa }}</span>{% endif %}
+            </td>
+            <td>
+              {% if sub.link_type == 'category' %}
+                <span class="badge bg-light text-dark"><i class="fas fa-folder me-1"></i>Category</span>
+              {% else %}
+                <code>{{ sub.url }}</code>
+              {% endif %}
+              {% if sub.open_new_tab %}<i class="fas fa-external-link-alt text-muted ms-1" title="Opens in new tab"></i>{% endif %}
+            </td>
+            <td>{{ sub.order }}</td>
+            <td>
+              <span class="badge {{ 'bg-success' if sub.is_active else 'bg-secondary' }}">
+                {{ 'Active' if sub.is_active else 'Inactive' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('admin.menu_edit', item_id=sub._id) }}"
+                 class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i>
+              </a>
+              <form method="POST" action="{{ url_for('admin.menu_delete', item_id=sub._id) }}"
+                    class="d-inline" onsubmit="return confirm('Delete this menu item?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+  <i class="fas fa-bars fa-4x mb-3"></i>
+  <h4>No menu items yet</h4>
+  <p>
+    Without menu items, the site header falls back to listing your categories automatically.
+    Add items here to fully control the navigation bar — custom links, category links, and their order.
+  </p>
+  <a href="{{ url_for('admin.menu_create') }}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i> Create First Menu Item
+  </a>
+</div>
+{% endif %}
+{% endblock %}

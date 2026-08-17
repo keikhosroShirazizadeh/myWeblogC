@@ -36,8 +36,10 @@ def create_app(config_class=Config):
     @app.context_processor
     def inject_globals():
         from .models.category import get_menu_categories
+        from .models.menu import get_menu_tree
         lang = session.get('lang', 'en')
         return {
+            'menu_items': get_menu_tree(),
             'menu_categories': get_menu_categories(),
             'current_lang': lang,
             'is_rtl': lang == 'fa',

@@ -31,37 +31,74 @@
             {{ 'خانه' if is_rtl else 'Home' }}
           </a>
         </li>
-        {% for item in menu_categories %}
-          {% set cat = item.category %}
-          {% if item.subcategories %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-              {{ cat.name_fa if is_rtl else cat.name_en }}
-            </a>
-            <ul class="dropdown-menu">
-              <li>
-                <a class="dropdown-item" href="{{ url_for('public.category_posts', slug=cat.slug) }}">
-                  {{ 'همه' if is_rtl else 'All' }} - {{ cat.name_fa if is_rtl else cat.name_en }}
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              {% for sub in item.subcategories %}
-              <li>
-                <a class="dropdown-item" href="{{ url_for('public.category_posts', slug=sub.slug) }}">
-                  {{ sub.name_fa if is_rtl else sub.name_en }}
-                </a>
-              </li>
-              {% endfor %}
-            </ul>
-          </li>
-          {% else %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('public.category_posts', slug=cat.slug) }}">
-              {{ cat.name_fa if is_rtl else cat.name_en }}
-            </a>
-          </li>
-          {% endif %}
-        {% endfor %}
+        {% if menu_items %}
+          {% for entry in menu_items %}
+            {% set mi = entry.item %}
+            {% if entry.children %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                {{ mi.title_fa if is_rtl else mi.title_en }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{{ mi.resolved_url }}"
+                     {{ 'target="_blank" rel="noopener"' if mi.open_new_tab }}>
+                    {{ mi.title_fa if is_rtl else mi.title_en }}
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                {% for child in entry.children %}
+                <li>
+                  <a class="dropdown-item" href="{{ child.resolved_url }}"
+                     {{ 'target="_blank" rel="noopener"' if child.open_new_tab }}>
+                    {{ child.title_fa if is_rtl else child.title_en }}
+                  </a>
+                </li>
+                {% endfor %}
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ mi.resolved_url }}"
+                 {{ 'target="_blank" rel="noopener"' if mi.open_new_tab }}>
+                {{ mi.title_fa if is_rtl else mi.title_en }}
+              </a>
+            </li>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          {% for item in menu_categories %}
+            {% set cat = item.category %}
+            {% if item.subcategories %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                {{ cat.name_fa if is_rtl else cat.name_en }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('public.category_posts', slug=cat.slug) }}">
+                    {{ 'همه' if is_rtl else 'All' }} - {{ cat.name_fa if is_rtl else cat.name_en }}
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                {% for sub in item.subcategories %}
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('public.category_posts', slug=sub.slug) }}">
+                    {{ sub.name_fa if is_rtl else sub.name_en }}
+                  </a>
+                </li>
+                {% endfor %}
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('public.category_posts', slug=cat.slug) }}">
+                {{ cat.name_fa if is_rtl else cat.name_en }}
+              </a>
+            </li>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
       </ul>
 
       <ul class="navbar-nav ms-auto align-items-center gap-2">

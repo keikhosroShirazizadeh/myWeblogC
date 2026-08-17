@@ -31,12 +31,14 @@ def dashboard():
     from app.models.template import get_all_templates, get_active_template
     from app.models.category import get_all_categories
     from app.models.post import get_all_posts
+    from app.models.menu import get_all_menu_items
     from app.models.user import User
 
     stats = {
         'templates': len(get_all_templates()),
         'categories': len(get_all_categories()),
         'posts': len(get_all_posts()),
+        'menu_items': len(get_all_menu_items()),
         'users': len(User.get_all()),
         'active_template': get_active_template(),
     }
@@ -258,6 +260,113 @@ def category_delete(cat_id):
     delete_category(cat_id)
     flash('Category deleted.', 'success')
     return redirect(url_for('admin.category_list'))
+
+
+# ─── Menu ─────────────────────────────────────────────────────────────────────
+
+@admin_bp.route('/menu')
+@admin_required
+def menu_list():
+    from app.models.menu import get_all_menu_items
+    all_items = get_all_menu_items()
+    top_level = [i for i in all_items if not i.get('parent_id')]
+    children = {}
+    for i in all_items:
+        if i.get('parent_id'):
+            pid = str(i['parent_id'])
+            children.setdefault(pid, []).append(i)
+    return render_template('admin/menu_list.html', top_level=top_level, children=children)
+
+
+@admin_bp.route('/menu/create', methods=['GET', 'POST'])
+@admin_required
+def menu_create():
+    from app.models.menu import create_menu_item, get_all_menu_items
+    from app.models.category import get_all_categories
+
+    if request.method == 'POST':
+        title_en = request.form.get('title_en', '').strip()
+        link_type = request.form.get('link_type', 'custom')
+        data = {
+            'title_en': title_en,
+            'title_fa': request.form.get('title_fa', '').strip(),
+            'link_type': link_type,
+            'category_id': request.form.get('category_id') or None,
+            'url': request.form.get('url', '').strip(),
+            'parent_id': request.form.get('parent_id') or None,
+            'order': int(request.form.get('order', 0)),
+            'open_new_tab': bool(request.form.get('open_new_tab')),
+            'is_active': bool(request.form.get('is_active')),
+        }
+
+        if not title_en:
+            flash('English title is required.', 'danger')
+        elif link_type == 'category' and not data['category_id']:
+            flash('Please choose a category to link to.', 'danger')
+        elif link_type == 'custom' and not data['url']:
+            flash('Please provide a URL.', 'danger')
+        else:
+            create_menu_item(data)
+            flash('Menu item created successfully.', 'success')
+            return redirect(url_for('admin.menu_list'))
+
+    all_items = get_all_menu_items()
+    all_cats = get_all_categories()
+    return render_template('admin/menu_form.html', item=None, all_items=all_items,
+                           all_cats=all_cats, action='create')
+
+
+@admin_bp.route('/menu/<item_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def menu_edit(item_id):
+    from app.models.menu import get_menu_item_by_id, update_menu_item, get_all_menu_items
+    from app.models.category import get_all_categories
+
+    item = get_menu_item_by_id(item_id)
+    if not item:
+        flash('Menu item not found.', 'danger')
+        return redirect(url_for('admin.menu_list'))
+
+    if request.method == 'POST':
+        title_en = request.form.get('title_en', '').strip()
+        link_type = request.form.get('link_type', 'custom')
+        data = {
+            'title_en': title_en,
+            'title_fa': request.form.get('title_fa', '').strip(),
+            'link_type': link_type,
+            'category_id': request.form.get('category_id') or None,
+            'url': request.form.get('url', '').strip(),
+            'order': int(request.form.get('order', 0)),
+            'open_new_tab': bool(request.form.get('open_new_tab')),
+            'is_active': bool(request.form.get('is_active')),
+        }
+        parent_id = request.form.get('parent_id') or None
+        data['parent_id'] = parent_id if parent_id and parent_id != item_id else None
+
+        if not title_en:
+            flash('English title is required.', 'danger')
+        elif link_type == 'category' and not data['category_id']:
+            flash('Please choose a category to link to.', 'danger')
+        elif link_type == 'custom' and not data['url']:
+            flash('Please provide a URL.', 'danger')
+        else:
+            update_menu_item(item_id, data)
+            flash('Menu item updated.', 'success')
+            return redirect(url_for('admin.menu_list'))
+
+    all_items = [i for i in get_all_menu_items() if str(i['_id']) != item_id]
+    all_cats = get_all_categories()
+    return render_template('admin/menu_form.html', item=item, all_items=all_items,
+                           all_cats=all_cats, action='edit')
+
+
+@admin_bp.route('/menu/<item_id>/delete', methods=['POST'])
+@admin_required
+def menu_delete(item_id):
+    from app.models.menu import delete_menu_item
+    delete_menu_item(item_id)
+    flash('Menu item deleted.', 'success')
+    return redirect(url_for('admin.menu_list'))
 
 
 # ─── Posts ────────────────────────────────────────────────────────────────────
