@@ -1,7 +1,7 @@
 import posixpath
 import re
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 
 SEMANTIC_TAGS = ['header', 'nav', 'main', 'footer', 'section', 'article', 'aside', 'div']
@@ -105,6 +105,74 @@ def _build_section(el, section_id, order):
         'css_fa': '',
         'order': order,
     }
+
+
+def extract_menu_links(html_content, limit=20):
+    """Best-effort extraction of the template's own nav bar links, used to seed
+    the site's navigation menu when a template is uploaded. Looks at the first
+    <nav> element, picks the <ul> with the most direct <li> children as the
+    primary link list (falling back to bare <a> tags inside <nav>), and treats
+    a nested <ul> inside an <li> as a one-level dropdown submenu.
+    """
+    soup = BeautifulSoup(html_content, 'lxml')
+    nav = soup.find('nav') or soup.find(attrs={'role': 'navigation'})
+    if not nav:
+        return []
+
+    def direct_li_count(ul):
+        return len(ul.find_all('li', recursive=False))
+
+    uls = [ul for ul in nav.find_all('ul') if direct_li_count(ul) > 0]
+    main_ul = max(uls, key=direct_li_count) if uls else None
+
+    items = []
+    if main_ul is not None:
+        for li in main_ul.find_all('li', recursive=False):
+            item = _extract_menu_li(li)
+            if item['title']:
+                items.append(item)
+    else:
+        for a in nav.find_all('a'):
+            title = a.get_text(strip=True)
+            href = (a.get('href') or '').strip()
+            if title and href and not href.startswith('#'):
+                items.append({'title': title, 'url': href, 'children': []})
+
+    return items[:limit]
+
+
+def _extract_menu_li(li):
+    direct_a = None
+    for child in li.children:
+        if not isinstance(child, Tag):
+            continue
+        if child.name == 'ul':
+            continue
+        if child.name == 'a':
+            direct_a = child
+            break
+        found = child.find('a')
+        if found:
+            direct_a = found
+            break
+
+    title = direct_a.get_text(strip=True) if direct_a else ''
+    href = (direct_a.get('href') or '').strip() if direct_a else ''
+
+    children = []
+    sub_ul = li.find('ul')
+    if sub_ul:
+        for sub_li in sub_ul.find_all('li', recursive=False):
+            sub_a = sub_li.find('a')
+            if not sub_a:
+                continue
+            sub_title = sub_a.get_text(strip=True)
+            if not sub_title:
+                continue
+            sub_href = (sub_a.get('href') or '').strip()
+            children.append({'title': sub_title, 'url': sub_href or '#', 'children': []})
+
+    return {'title': title, 'url': href or '#', 'children': children}
 
 
 def extract_global_styles(html_content):

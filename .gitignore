@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 .env
 *.psd
+DEPLOY_STEPS.txt
+SSH_DIAGNOSE.txt

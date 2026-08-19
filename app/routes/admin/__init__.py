@@ -10,6 +10,8 @@ from bson import ObjectId
 
 admin_bp = Blueprint('admin', __name__, template_folder='../../templates/admin')
 
+MAX_INLINE_HTML_BYTES = 15 * 1024 * 1024  # stays under MongoDB's 16 MB per-document limit
+
 
 def admin_required(f):
     @wraps(f)
@@ -60,8 +62,10 @@ def template_list():
 def template_upload():
     import shutil
     from app.models.template import create_template, save_section
+    from app.models.menu import get_all_menu_items, create_menu_item
     from app.utils.template_parser import (
-        parse_template, extract_global_styles, extract_global_scripts, rewrite_asset_paths
+        parse_template, extract_global_styles, extract_global_scripts,
+        extract_menu_links, rewrite_asset_paths
     )
     from app.utils.zip_template import extract_template_zip
     from app.utils.helpers import allowed_file
@@ -99,6 +103,12 @@ def template_upload():
         if not html_content:
             flash('Please upload a file or paste HTML content.', 'danger')
             return render_template('admin/template_upload.html')
+        if not asset_folder and len(html_content.encode('utf-8')) > MAX_INLINE_HTML_BYTES:
+            flash('That HTML is too large to store directly '
+                  f'(max {MAX_INLINE_HTML_BYTES // (1024 * 1024)} MB — MongoDB\'s per-document limit). '
+                  'Package the template as a .zip instead, so images/CSS/JS are stored as files '
+                  'rather than inline in the page.', 'danger')
+            return render_template('admin/template_upload.html')
 
         global_css = extract_global_styles(html_content)
         global_js = extract_global_scripts(html_content)
@@ -109,9 +119,47 @@ def template_upload():
         for sec in sections:
             save_section(template_id, sec)
 
+        menu_links = extract_menu_links(html_content)
+        added_menu_count = 0
+        if menu_links:
+            existing = get_all_menu_items()
+            existing_keys = {
+                (m.get('title_en', '').strip().lower(), (m.get('url') or '').strip())
+                for m in existing
+            }
+            next_order = max([m.get('order', 0) for m in existing if not m.get('parent_id')], default=-1) + 1
+            for link in menu_links:
+                key = (link['title'].strip().lower(), link['url'].strip())
+                if key in existing_keys:
+                    continue
+                parent_id = create_menu_item({
+                    'title_en': link['title'],
+                    'link_type': 'custom',
+                    'url': link['url'],
+                    'order': next_order,
+                })
+                existing_keys.add(key)
+                next_order += 1
+                added_menu_count += 1
+                for child_order, child in enumerate(link.get('children', [])):
+                    child_key = (child['title'].strip().lower(), child['url'].strip())
+                    if child_key in existing_keys:
+                        continue
+                    create_menu_item({
+                        'title_en': child['title'],
+                        'link_type': 'custom',
+                        'url': child['url'],
+                        'parent_id': parent_id,
+                        'order': child_order,
+                    })
+                    existing_keys.add(child_key)
+                    added_menu_count += 1
+
         message = f'Template "{name}" uploaded with {len(sections)} sections extracted.'
         if asset_folder:
             message += ' Linked CSS, JS, and image files from the archive were imported.'
+        if added_menu_count:
+            message += f' {added_menu_count} menu link(s) from the template were added to the navigation menu.'
         flash(message, 'success')
         return redirect(url_for('admin.template_sections', template_id=template_id))
 
